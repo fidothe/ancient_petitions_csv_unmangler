@@ -10,7 +10,9 @@ output_path = File.join(File.dirname(input_path), (File.basename(input_path, '.c
 
 input_csv = CSV.open(input_path, 'r:windows-1252', :headers => true, :return_headers => true)
 input_headers = input_csv.shift.headers
-input_headers.delete('scopeoflow') 
+['scopeoflow', 'closure_status', 'closure_type', 'closure_code', 'opendate', 'orderable', 'header_title', 'header_scope', 'hdate_text', 'subheader_title', 'subheader_scope', 'shdate_text', 'refchar1'].each do |key|
+  input_headers.delete(key)
+end
 input_headers = input_headers + ['date_from', 'date_to', 'url']
 out = CSV.open(output_path, 'wb:windows-1252')
 
