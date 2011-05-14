@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 require 'csv'
+require 'cgi'
 
 input_path = ARGV[0]
 raise "input file doesn't exist" unless File.file?(input_path)
@@ -10,7 +11,7 @@ output_path = File.join(File.dirname(input_path), (File.basename(input_path, '.c
 input_csv = CSV.open(input_path, 'r:windows-1252', :headers => true, :return_headers => true)
 input_headers = input_csv.shift.headers
 input_headers.delete('scopeoflow') 
-input_headers = input_headers + ['date_from', 'date_to']
+input_headers = input_headers + ['date_from', 'date_to', 'url']
 out = CSV.open(output_path, 'wb:windows-1252')
 
 def consolidate_docscope(row_hash)
@@ -36,6 +37,10 @@ def extract_date_fields(row_hash)
   row_hash['date_to'] = end_date
 end
 
+def construct_url(row_hash)
+  row_hash['url'] = "http://discovery.nationalarchives.gov.uk/SearchUI/Result.mvc?searchQuery=#{CGI.escape("#{row_hash['letter_code']} #{row_hash['class_no']}/#{row_hash['pref']}/#{row_hash['iref']}")}"
+end
+
 def construct_row(headers, row_hash)
   headers.collect { |k| row_hash[k] }
 end
@@ -51,6 +56,7 @@ while row = input_csv.shift
   row_hash = row.to_hash
   consolidate_docscope(row_hash)
   extract_date_fields(row_hash)
+  construct_url(row_hash)
 
   out << construct_row(input_headers, row_hash)
 
